@@ -24,7 +24,7 @@ impl Storable<AILog> for AILog {
         Ok(())
     }
 
-    fn init(&self, conn: &Connection) -> Result<(), Box<dyn std::error::Error>> {
+    fn init(conn: &Connection) -> Result<(), Box<dyn std::error::Error>> {
         conn.execute("
             CREATE TABLE IF NOT EXISTS ai_logs (
                 id INTEGER primary key,
@@ -58,8 +58,19 @@ impl Storable<AILog> for AILog {
 
 pub fn get_logs() -> Result<Vec<AILog>, Box<dyn std::error::Error>> {
     let conn = Connection::open("./test.db".to_string())?;
+    let results : Vec<AILog> = AILog::all(&conn)?;
 
-    Ok(AILog::all(&conn)?)
+    for result in results.iter() {
+        let lines :Vec<&str> = result.content
+            .split("\\n")
+            .collect();
+
+        for line in lines.iter() {
+            println!("{}", line);
+        }
+
+    }
+    Ok(results)
 }
 
 pub async fn request(prompt: String, is_test: bool) -> Result<(String,String), Box<dyn std::error::Error>> {
@@ -90,9 +101,10 @@ async fn anthropic_request(prompt: String) -> Result<(String,String), Box<dyn st
 
     let conn = Connection::open("./test.db".to_string())?;
 
-    let prompt = "Hello! do you think its valuable to save responses you send me in a sqlite database? What could I do with them?";
+    let _ = AILog::init(&conn).expect("Failed to create ai_logs");
+
     let user_log = AILog::new(&"user".to_string(), &prompt.to_string());
-    let _ = AILog::create(&user_log, &conn);
+    let _ = AILog::create(&user_log, &conn).expect("Failed to insert record");
 
 
     // Make the request Client

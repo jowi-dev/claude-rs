@@ -5,5 +5,5 @@ pub trait Storable<T> {
     // return all records
     fn all(conn: &rusqlite::Connection) -> Result<Vec<T>, Box<dyn std::error::Error>>;
     // Initialize the table in the database
-    fn init(&self, conn: &rusqlite::Connection) -> Result<(), Box<dyn std::error::Error>>;
+    fn init(conn: &rusqlite::Connection) -> Result<(), Box<dyn std::error::Error>>;
 }
