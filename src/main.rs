@@ -1,9 +1,9 @@
-mod storage;
 mod ai;
+mod db;
+mod schema;
 
 use std::env;
 use std::collections::VecDeque;
-use ai::AILog;
 
 enum ValidCommand {
     AI,
@@ -36,7 +36,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
             }
 
             if get_logs {
-               let _ =  ai::get_logs().expect("database connection could not be established");
+               let _ =  ai::get_logs().await?;
             }
             else {
                 let (_, content) = ai::request(command.input.to_string(), is_true(is_test.to_string())).await?;
